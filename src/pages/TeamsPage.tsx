@@ -21,12 +21,11 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { useNavigate } from 'react-router-dom'
 import { useTeams, useDeleteTeam } from '../hooks/useTeams'
 import { useLuminaries } from '../hooks/useLuminaries'
-import { useSubclasses } from '../hooks/useSubclasses'
 import LuminaryIcon from '../components/LuminaryIcon'
+import SubclassIcon from '../components/SubclassIcon'
 import { imageUrl } from '../api/client'
 import type { Team } from '../types/team'
 import type { Luminary, GearItem as GearItemType } from '../types/luminary'
-import type { Subclass } from '../types/subclass'
 
 // ── Styled gear tooltip ───────────────────────────────────────────────────────
 
@@ -239,141 +238,13 @@ function SetBonusChip({ info }: { info: SetBonusInfo }) {
 
 // ── Subclass icon with tooltip ────────────────────────────────────────────────
 
-function SubclassIcon({
-  name,
-  iconPath,
-  subclassMap,
-}: {
-  name: string
-  iconPath?: string
-  subclassMap: Map<string, Subclass>
-}) {
-  const sub = subclassMap.get(name.toLowerCase())
-
-  return (
-    <Tooltip
-      title={
-        <Box sx={{ maxWidth: 280 }}>
-          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff', mb: 0.5 }}>
-            {name}
-          </Typography>
-          {sub?.attributes && sub.attributes.length > 0 && (
-            <Box
-              sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: sub?.description ? 0.75 : 0 }}
-            >
-              {sub.attributes.map((attr) => (
-                <Box
-                  key={attr}
-                  sx={{
-                    fontSize: '0.68rem',
-                    fontWeight: 700,
-                    color: '#86efac',
-                    bgcolor: 'rgba(134,239,172,0.1)',
-                    border: '1px solid rgba(134,239,172,0.25)',
-                    borderRadius: 0.75,
-                    px: 0.75,
-                    py: 0.25,
-                  }}
-                >
-                  {attr}
-                </Box>
-              ))}
-            </Box>
-          )}
-          {sub?.description && (
-            <Typography
-              sx={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.72)', lineHeight: 1.5 }}
-            >
-              {sub.description}
-            </Typography>
-          )}
-        </Box>
-      }
-      placement="top"
-      arrow
-      enterDelay={300}
-      enterNextDelay={300}
-      slotProps={{
-        tooltip: {
-          sx: {
-            bgcolor: '#12122a',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: 2,
-            p: 1.5,
-            maxWidth: 'none',
-            boxShadow: '0 6px 24px rgba(0,0,0,0.55)',
-          },
-        },
-        arrow: { sx: { color: '#12122a' } },
-      }}
-    >
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 0.5,
-          flexShrink: 0,
-          cursor: 'default',
-        }}
-      >
-        {iconPath ? (
-          <Box
-            component="img"
-            src={imageUrl(iconPath)}
-            alt={name}
-            sx={{
-              width: 100,
-              height: 100,
-              objectFit: 'contain',
-              transition: 'filter 0.15s',
-              '&:hover': { filter: 'brightness(1.15)' },
-            }}
-            onError={(e) => {
-              ;(e.target as HTMLImageElement).style.display = 'none'
-            }}
-          />
-        ) : (
-          <Box
-            sx={{
-              width: 100,
-              height: 100,
-              borderRadius: 2,
-              bgcolor: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>?</Typography>
-          </Box>
-        )}
-        <Typography
-          sx={{
-            fontSize: '0.7rem',
-            color: 'rgba(255,255,255,0.55)',
-            textAlign: 'center',
-            lineHeight: 1.2,
-            maxWidth: 100,
-          }}
-        >
-          {name}
-        </Typography>
-      </Box>
-    </Tooltip>
-  )
-}
-
 // ── Expanded luminary row ─────────────────────────────────────────────────────
 
 function ExpandedLuminaryRow({
   l,
-  subclassMap,
   onNavigate,
 }: {
   l: Luminary
-  subclassMap: Map<string, Subclass>
   onNavigate: (path: string) => void
 }) {
   // Deduplicate set bonuses from recommended gear
@@ -456,12 +327,7 @@ function ExpandedLuminaryRow({
         {/* Subclass icons — anchored right */}
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', ml: 'auto', flexShrink: 0 }}>
           {(l.subclasses ?? []).map((sub) => (
-            <SubclassIcon
-              key={sub}
-              name={sub}
-              iconPath={l.subclass_icon_paths?.[sub]}
-              subclassMap={subclassMap}
-            />
+            <SubclassIcon key={sub} name={sub} iconPath={l.subclass_icon_paths?.[sub]} />
           ))}
         </Box>
       </Box>
@@ -474,7 +340,6 @@ function ExpandedLuminaryRow({
 export default function TeamsPage() {
   const { data: teams = [], isLoading } = useTeams()
   const { data: luminaries = [] } = useLuminaries()
-  const { data: subclasses = [] } = useSubclasses()
   const deleteTeam = useDeleteTeam()
   const navigate = useNavigate()
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
@@ -482,10 +347,6 @@ export default function TeamsPage() {
 
   const bySlug: Record<string, Luminary> = Object.fromEntries(
     luminaries.map((l: Luminary) => [l.slug, l])
-  )
-
-  const subclassMap = new Map<string, Subclass>(
-    subclasses.map((s: Subclass) => [s.name.toLowerCase(), s])
   )
 
   if (isLoading) {
@@ -588,14 +449,7 @@ export default function TeamsPage() {
               <Box sx={{ px: 2, pb: 1 }}>
                 {team.luminary_slugs.map((slug) => {
                   const l = bySlug[slug]
-                  return l ? (
-                    <ExpandedLuminaryRow
-                      key={slug}
-                      l={l}
-                      subclassMap={subclassMap}
-                      onNavigate={navigate}
-                    />
-                  ) : null
+                  return l ? <ExpandedLuminaryRow key={slug} l={l} onNavigate={navigate} /> : null
                 })}
               </Box>
             </Collapse>

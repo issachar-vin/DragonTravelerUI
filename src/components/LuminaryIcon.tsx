@@ -4,6 +4,7 @@ import { FACTION_COLORS, factionIconUrl } from '../constants/factions'
 import { classIconUrl } from '../constants/classes'
 import type { Luminary } from '../types/luminary'
 import StatusText from './StatusText'
+import SubclassIcon from './SubclassIcon'
 
 const RARITY_COLORS: Record<string, string> = {
   'SSR EX': '#0d9488',
@@ -139,44 +140,15 @@ function TooltipContent({ l }: { l: Luminary }) {
               spacing={1}
               sx={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}
             >
-              {l.subclasses!.map((sub) => {
-                const iconPath = l.subclass_icon_paths?.[sub]
-                return (
-                  <Box
-                    key={sub}
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 0.4,
-                      width: 56,
-                    }}
-                  >
-                    {iconPath && (
-                      <Box
-                        component="img"
-                        src={imageUrl(iconPath)}
-                        alt={sub}
-                        sx={{ width: 44, height: 44, objectFit: 'contain' }}
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).style.display = 'none'
-                        }}
-                      />
-                    )}
-                    <Typography
-                      sx={{
-                        fontSize: '0.58rem',
-                        color: 'rgba(255,255,255,0.55)',
-                        textAlign: 'center',
-                        lineHeight: 1.2,
-                        wordBreak: 'break-word',
-                      }}
-                    >
-                      {sub}
-                    </Typography>
-                  </Box>
-                )
-              })}
+              {l.subclasses!.map((sub) => (
+                <SubclassIcon
+                  key={sub}
+                  name={sub}
+                  iconPath={l.subclass_icon_paths?.[sub]}
+                  size={44}
+                  labelSize="0.58rem"
+                />
+              ))}
             </Stack>
           )}
         </Box>
@@ -316,9 +288,79 @@ function TooltipContent({ l }: { l: Luminary }) {
           </Box>
         )}
 
-        {/* ── Two-column: Skills (left) | Talent (right) ─────────────────── */}
+        {/* ── Two-column: Talent (left) | Skills (right) ─────────────────── */}
         {(skills.length > 0 || l.talent) && (
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+            {/* Talent column */}
+            {l.talent && (
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography
+                  sx={{
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    color: 'rgba(255,255,255,0.35)',
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.6,
+                    mb: 1,
+                  }}
+                >
+                  Talent
+                </Typography>
+                <Typography
+                  sx={{ fontWeight: 700, color: 'primary.main', fontSize: '0.82rem', mb: 1 }}
+                >
+                  {l.talent.name}
+                </Typography>
+                <Stack spacing={1}>
+                  {talentLevels.map((lvl) => (
+                    <Box key={lvl.level}>
+                      <Box
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          px: 0.75,
+                          py: 0.2,
+                          mb: 0.4,
+                          borderRadius: 1,
+                          bgcolor: 'rgba(99,102,241,0.15)',
+                          border: '1px solid rgba(99,102,241,0.35)',
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: '0.65rem',
+                            fontWeight: 700,
+                            color: '#818cf8',
+                            lineHeight: 1,
+                          }}
+                        >
+                          Lv {lvl.level}
+                        </Typography>
+                      </Box>
+                      <StatusText
+                        text={lvl.description}
+                        color="rgba(255,255,255,0.6)"
+                        fontSize="0.71rem"
+                        sx={{ lineHeight: 1.55, display: 'block' }}
+                      />
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            )}
+
+            {/* Divider between columns */}
+            {l.talent && skills.length > 0 && (
+              <Box
+                sx={{
+                  width: '1px',
+                  bgcolor: 'rgba(255,255,255,0.08)',
+                  alignSelf: 'stretch',
+                  flexShrink: 0,
+                }}
+              />
+            )}
+
             {/* Skills column */}
             {skills.length > 0 && (
               <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -408,76 +450,6 @@ function TooltipContent({ l }: { l: Luminary }) {
                       </Box>
                     )
                   })}
-                </Stack>
-              </Box>
-            )}
-
-            {/* Divider between columns */}
-            {skills.length > 0 && l.talent && (
-              <Box
-                sx={{
-                  width: '1px',
-                  bgcolor: 'rgba(255,255,255,0.08)',
-                  alignSelf: 'stretch',
-                  flexShrink: 0,
-                }}
-              />
-            )}
-
-            {/* Talent column */}
-            {l.talent && (
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  sx={{
-                    fontSize: '0.68rem',
-                    fontWeight: 700,
-                    color: 'rgba(255,255,255,0.35)',
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.6,
-                    mb: 1,
-                  }}
-                >
-                  Talent
-                </Typography>
-                <Typography
-                  sx={{ fontWeight: 700, color: 'primary.main', fontSize: '0.82rem', mb: 1 }}
-                >
-                  {l.talent.name}
-                </Typography>
-                <Stack spacing={1}>
-                  {talentLevels.map((lvl) => (
-                    <Box key={lvl.level}>
-                      <Box
-                        sx={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          px: 0.75,
-                          py: 0.2,
-                          mb: 0.4,
-                          borderRadius: 1,
-                          bgcolor: 'rgba(99,102,241,0.15)',
-                          border: '1px solid rgba(99,102,241,0.35)',
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            fontSize: '0.65rem',
-                            fontWeight: 700,
-                            color: '#818cf8',
-                            lineHeight: 1,
-                          }}
-                        >
-                          Lv {lvl.level}
-                        </Typography>
-                      </Box>
-                      <StatusText
-                        text={lvl.description}
-                        color="rgba(255,255,255,0.6)"
-                        fontSize="0.71rem"
-                        sx={{ lineHeight: 1.55, display: 'block' }}
-                      />
-                    </Box>
-                  ))}
                 </Stack>
               </Box>
             )}
