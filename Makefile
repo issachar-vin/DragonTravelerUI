@@ -16,9 +16,9 @@ up:
 down:
 	docker compose down
 
-## Restart dev containers (Vite HMR — no image rebuild needed).
+## Rebuild dev container and restart with fresh node_modules (picks up new packages).
 restart:
-	docker compose -f docker-compose.dev.yml down
+	docker compose -f docker-compose.dev.yml down -v
 	docker compose -f docker-compose.dev.yml up -d --build
 
 ## Auto-fix imports/style; report any remaining logic errors.
