@@ -3,50 +3,17 @@ import { Box, Typography, Stack, Button, Chip, CircularProgress, Tooltip } from 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { useLuminaries } from '../hooks/useLuminaries'
 import { imageUrl } from '../api/client'
-import { FACTION_COLORS, factionIconUrl } from '../constants/factions'
 import { classIconUrl } from '../constants/classes'
+import { TIER_COLORS, RARITY_COLORS } from '../constants/colors'
+import { skillTypeStyle } from '../utils/skillTypeStyle'
 import StatusText from '../components/StatusText'
 import SubclassIcon from '../components/SubclassIcon'
+import FactionBadge from '../components/FactionBadge'
+import SectionCard from '../components/SectionCard'
 import GearTooltipContent from '../components/GearTooltipContent'
 import { TOOLTIP_SLOT_PROPS } from '../constants/tooltips'
 
 const BG = '#0f0f1a'
-
-const RARITY_COLORS: Record<string, string> = {
-  'SSR EX': '#0d9488',
-  'SSR+': '#ef4444',
-  SSR: '#f59e0b',
-  SR: '#8b5cf6',
-  R: '#64748b',
-}
-
-const TIER_COLORS: Record<string, string> = {
-  SS: '#d4a017',
-  S: '#ff6b35',
-  A: '#ffa500',
-  B: '#4fc3f7',
-  C: '#81c784',
-}
-
-const SKILL_TYPE_STYLES: Record<string, { bg: string; color: string; border: string }> = {
-  default: {
-    bg: 'rgba(255,255,255,0.08)',
-    color: 'rgba(255,255,255,0.5)',
-    border: 'rgba(255,255,255,0.12)',
-  },
-  ultimate: { bg: '#7c3aed22', color: '#a78bfa', border: '#7c3aed60' },
-  overdrive: { bg: '#991b1b33', color: '#fca5a5', border: '#991b1b60' },
-  passive: { bg: '#14532d22', color: '#86efac', border: '#14532d60' },
-}
-
-function skillTypeStyle(type?: string) {
-  if (!type) return SKILL_TYPE_STYLES.default
-  const t = type.toLowerCase()
-  if (t.includes('ultimate') || t.includes('divine')) return SKILL_TYPE_STYLES.ultimate
-  if (t.includes('overdrive')) return SKILL_TYPE_STYLES.overdrive
-  if (t.includes('passive')) return SKILL_TYPE_STYLES.passive
-  return SKILL_TYPE_STYLES.default
-}
 
 export default function LuminaryPage() {
   const { slug } = useParams<{ slug: string }>()
@@ -257,41 +224,7 @@ export default function LuminaryPage() {
               {hasFactions && (
                 <Stack direction="row" spacing={1.5} sx={{ justifyContent: 'flex-end' }}>
                   {l.factions.map((f) => (
-                    <Box
-                      key={f}
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: 0.4,
-                      }}
-                    >
-                      <Box
-                        component="img"
-                        src={factionIconUrl(f)}
-                        alt={f}
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          objectFit: 'contain',
-                          filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.8))',
-                        }}
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).style.display = 'none'
-                        }}
-                      />
-                      <Typography
-                        sx={{
-                          fontSize: '0.6rem',
-                          fontWeight: 600,
-                          color: FACTION_COLORS[f] ?? 'rgba(255,255,255,0.75)',
-                          textShadow: '0 1px 4px rgba(0,0,0,0.9)',
-                          textAlign: 'center',
-                        }}
-                      >
-                        {f}
-                      </Typography>
-                    </Box>
+                    <FactionBadge key={f} name={f} size={40} dropShadow textShadow />
                   ))}
                 </Stack>
               )}
@@ -319,7 +252,7 @@ export default function LuminaryPage() {
       <Box sx={{ px: { xs: 2, sm: 3 }, pb: 4 }}>
         {/* ── Recommended Gear ──────────────────────────────────────── */}
         {(l.recommended_gear?.length ?? 0) > 0 && (
-          <Box sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 3, mb: 3, mt: 3 }}>
+          <SectionCard sx={{ p: 3, mb: 3, mt: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
               Recommended Gear
             </Typography>
@@ -386,7 +319,7 @@ export default function LuminaryPage() {
                 </Tooltip>
               ))}
             </Stack>
-          </Box>
+          </SectionCard>
         )}
 
         {/* ── Talent (left) + Skills (right) side by side ───────────── */}
@@ -394,15 +327,7 @@ export default function LuminaryPage() {
           <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start', mb: 3 }}>
             {/* Talent — left */}
             {l.talent && (
-              <Box
-                sx={{
-                  flex: 1,
-                  minWidth: 0,
-                  bgcolor: 'background.paper',
-                  borderRadius: 2,
-                  p: 3,
-                }}
-              >
+              <SectionCard sx={{ flex: 1, minWidth: 0, p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5 }}>
                   Talent
                 </Typography>
@@ -458,20 +383,12 @@ export default function LuminaryPage() {
                     </Box>
                   ))}
                 </Stack>
-              </Box>
+              </SectionCard>
             )}
 
             {/* Skills — right */}
             {(l.skills?.length ?? 0) > 0 && (
-              <Box
-                sx={{
-                  flex: 1,
-                  minWidth: 0,
-                  bgcolor: 'background.paper',
-                  borderRadius: 2,
-                  p: 3,
-                }}
-              >
+              <SectionCard sx={{ flex: 1, minWidth: 0, p: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
                   Skills
                 </Typography>
@@ -539,7 +456,7 @@ export default function LuminaryPage() {
                     )
                   })}
                 </Stack>
-              </Box>
+              </SectionCard>
             )}
           </Box>
         )}

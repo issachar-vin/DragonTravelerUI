@@ -14,20 +14,10 @@ import FilterChip from '../components/FilterChip'
 import LuminaryIcon from '../components/LuminaryIcon'
 import { FACTION_COLORS, factionIconUrl } from '../constants/factions'
 import { CLASS_COLORS, classIconUrl } from '../constants/classes'
+import { TIER_COLORS } from '../constants/colors'
 import type { Luminary } from '../types/luminary'
 
 const TIERS = ['SS', 'S+', 'S', 'A+', 'A', 'B+', 'B', 'C+', 'C']
-const TIER_COLORS: Record<string, string> = {
-  SS: '#d4a017',
-  'S+': '#ff4500',
-  S: '#ff6b35',
-  'A+': '#ff8c00',
-  A: '#ffa500',
-  'B+': '#1e90ff',
-  B: '#4fc3f7',
-  'C+': '#3cb371',
-  C: '#81c784',
-}
 
 function TierRow({
   tier,

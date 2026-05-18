@@ -1,40 +1,14 @@
 import { Box, Tooltip, Typography, Stack, Chip } from '@mui/material'
 import { imageUrl } from '../api/client'
-import { FACTION_COLORS, factionIconUrl } from '../constants/factions'
 import { classIconUrl } from '../constants/classes'
+import { RARITY_COLORS } from '../constants/colors'
+import { skillTypeStyle } from '../utils/skillTypeStyle'
 import type { Luminary } from '../types/luminary'
 import StatusText from './StatusText'
 import SubclassIcon from './SubclassIcon'
+import FactionBadge from './FactionBadge'
 import GearTooltipContent from './GearTooltipContent'
 import { TOOLTIP_SLOT_PROPS } from '../constants/tooltips'
-
-const RARITY_COLORS: Record<string, string> = {
-  'SSR EX': '#0d9488',
-  'SSR+': '#ef4444',
-  SSR: '#f59e0b',
-  SR: '#8b5cf6',
-  R: '#64748b',
-}
-
-const SKILL_TYPE_STYLES: Record<string, { bg: string; color: string; border: string }> = {
-  default: {
-    bg: 'rgba(255,255,255,0.08)',
-    color: 'rgba(255,255,255,0.5)',
-    border: 'rgba(255,255,255,0.12)',
-  },
-  ultimate: { bg: '#7c3aed22', color: '#a78bfa', border: '#7c3aed60' },
-  overdrive: { bg: '#991b1b33', color: '#fca5a5', border: '#991b1b60' },
-  passive: { bg: '#14532d22', color: '#86efac', border: '#14532d60' },
-}
-
-function skillTypeStyle(type?: string) {
-  if (!type) return SKILL_TYPE_STYLES.default
-  const t = type.toLowerCase()
-  if (t.includes('ultimate') || t.includes('divine')) return SKILL_TYPE_STYLES.ultimate
-  if (t.includes('overdrive')) return SKILL_TYPE_STYLES.overdrive
-  if (t.includes('passive')) return SKILL_TYPE_STYLES.passive
-  return SKILL_TYPE_STYLES.default
-}
 
 function TooltipContent({ l }: { l: Luminary }) {
   const gear = l.recommended_gear ?? []
@@ -102,37 +76,7 @@ function TooltipContent({ l }: { l: Luminary }) {
               sx={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}
             >
               {l.factions.map((f) => (
-                <Box
-                  key={f}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 0.4,
-                    width: 56,
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={factionIconUrl(f)}
-                    alt={f}
-                    sx={{ width: 44, height: 44, objectFit: 'contain' }}
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).style.display = 'none'
-                    }}
-                  />
-                  <Typography
-                    sx={{
-                      fontSize: '0.58rem',
-                      color: FACTION_COLORS[f] ?? 'rgba(255,255,255,0.55)',
-                      textAlign: 'center',
-                      lineHeight: 1.2,
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {f}
-                  </Typography>
-                </Box>
+                <FactionBadge key={f} name={f} size={44} />
               ))}
             </Stack>
           )}
