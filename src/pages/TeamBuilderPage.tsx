@@ -14,11 +14,29 @@ import {
 } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import CheckIcon from '@mui/icons-material/Check'
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
+import CloseIcon from '@mui/icons-material/Close'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useLuminaries } from '../hooks/useLuminaries'
 import { useCreateTeam, useUpdateTeam } from '../hooks/useTeams'
 import LuminaryIcon from '../components/LuminaryIcon'
 import FilterChip from '../components/FilterChip'
+import { imageUrl } from '../api/client'
 import { FACTION_COLORS, factionIconUrl } from '../constants/factions'
 import { CLASS_COLORS, classIconUrl } from '../constants/classes'
 import type { Luminary } from '../types/luminary'
@@ -26,12 +44,105 @@ import type { Team } from '../types/team'
 
 const MAX = 6
 
+// ── Draggable team member row ─────────────────────────────────────────────────
+
+function SortableMemberRow({ luminary, onRemove }: { luminary: Luminary; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: luminary.slug,
+  })
+
+  return (
+    <Box
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+        zIndex: isDragging ? 1 : 'auto',
+      }}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1.5,
+        px: 1.5,
+        py: 1,
+        bgcolor: isDragging ? 'rgba(212,160,23,0.08)' : 'rgba(255,255,255,0.03)',
+        border: '1px solid',
+        borderColor: isDragging ? 'primary.main' : 'rgba(255,255,255,0.07)',
+        borderRadius: 1.5,
+        cursor: isDragging ? 'grabbing' : 'grab',
+      }}
+    >
+      {/* Drag handle */}
+      <Box
+        {...attributes}
+        {...listeners}
+        sx={{
+          color: 'rgba(255,255,255,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          '&:hover': { color: 'rgba(255,255,255,0.5)' },
+          touchAction: 'none',
+        }}
+      >
+        <DragIndicatorIcon fontSize="small" />
+      </Box>
+
+      {/* Icon */}
+      {luminary.icon_path ? (
+        <Box
+          component="img"
+          src={imageUrl(luminary.icon_path)}
+          alt={luminary.name}
+          sx={{ width: 40, height: 54, objectFit: 'cover', borderRadius: 1, flexShrink: 0 }}
+          onError={(e) => {
+            ;(e.target as HTMLImageElement).style.display = 'none'
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            width: 40,
+            height: 54,
+            borderRadius: 1,
+            bgcolor: '#1a1a2e',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#d4a017' }}>
+            {luminary.name[0]}
+          </Typography>
+        </Box>
+      )}
+
+      {/* Name */}
+      <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', flex: 1, minWidth: 0 }} noWrap>
+        {luminary.name}
+      </Typography>
+
+      {/* Remove */}
+      <IconButton
+        size="small"
+        onClick={onRemove}
+        sx={{ color: 'rgba(255,255,255,0.3)', '&:hover': { color: '#ef4444' } }}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </Box>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function TeamBuilderPage() {
   const { data: luminaries = [] } = useLuminaries()
   const { state } = useLocation() as { state?: { team?: Team } }
   const editingTeam = state?.team
 
-  const [selected, setSelected] = useState<Set<string>>(new Set(editingTeam?.luminary_slugs ?? []))
+  const [orderedSlugs, setOrderedSlugs] = useState<string[]>(editingTeam?.luminary_slugs ?? [])
   const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set())
   const [selectedFactions, setSelectedFactions] = useState<Set<string>>(new Set())
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -40,6 +151,13 @@ export default function TeamBuilderPage() {
   const navigate = useNavigate()
   const createTeam = useCreateTeam()
   const updateTeam = useUpdateTeam()
+
+  const selectedSet = useMemo(() => new Set(orderedSlugs), [orderedSlugs])
+
+  const bySlug = useMemo(
+    () => Object.fromEntries(luminaries.map((l: Luminary) => [l.slug, l])),
+    [luminaries]
+  )
 
   const classes = useMemo(
     () => [...new Set(luminaries.map((l: Luminary) => l.class))].sort(),
@@ -62,15 +180,10 @@ export default function TeamBuilderPage() {
   )
 
   const toggle = (slug: string) =>
-    setSelected((prev) => {
-      const s = new Set(prev)
-      if (s.has(slug)) {
-        s.delete(slug)
-        return s
-      }
-      if (s.size >= MAX) return s
-      s.add(slug)
-      return s
+    setOrderedSlugs((prev) => {
+      if (prev.includes(slug)) return prev.filter((s) => s !== slug)
+      if (prev.length >= MAX) return prev
+      return [...prev, slug]
     })
 
   const toggleFilter = (prev: Set<string>, val: string): Set<string> => {
@@ -80,13 +193,26 @@ export default function TeamBuilderPage() {
     return s
   }
 
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (over && active.id !== over.id) {
+      setOrderedSlugs((prev) => {
+        const from = prev.indexOf(String(active.id))
+        const to = prev.indexOf(String(over.id))
+        return arrayMove(prev, from, to)
+      })
+    }
+  }
+
   const handleUpdate = async () => {
     if (!editingTeam) return
     try {
       await updateTeam.mutateAsync({
         id: editingTeam.id,
         name: teamName,
-        luminary_slugs: [...selected],
+        luminary_slugs: orderedSlugs,
       })
       navigate('/teams')
     } catch {
@@ -96,7 +222,7 @@ export default function TeamBuilderPage() {
 
   const handleCreate = async () => {
     try {
-      await createTeam.mutateAsync({ name: teamName, luminary_slugs: [...selected] })
+      await createTeam.mutateAsync({ name: teamName, luminary_slugs: orderedSlugs })
       navigate('/teams')
     } catch {
       // error state handled by react-query
@@ -156,9 +282,43 @@ export default function TeamBuilderPage() {
           </Typography>
         )}
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {selected.size}/{MAX} selected
+          {orderedSlugs.length}/{MAX} selected
         </Typography>
       </Box>
+
+      {/* ── Selected team tray ─────────────────────────────────────────── */}
+      {orderedSlugs.length > 0 && (
+        <Box sx={{ bgcolor: 'background.paper', borderRadius: 2, p: 2, mb: 3 }}>
+          <Typography
+            sx={{
+              fontSize: '0.68rem',
+              fontWeight: 700,
+              color: 'rgba(255,255,255,0.35)',
+              textTransform: 'uppercase',
+              letterSpacing: 0.6,
+              mb: 1.5,
+            }}
+          >
+            Your Team — drag to reorder
+          </Typography>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext items={orderedSlugs} strategy={verticalListSortingStrategy}>
+              <Stack spacing={0.75}>
+                {orderedSlugs.map((slug) => {
+                  const l = bySlug[slug]
+                  return l ? (
+                    <SortableMemberRow key={slug} luminary={l} onRemove={() => toggle(slug)} />
+                  ) : null
+                })}
+              </Stack>
+            </SortableContext>
+          </DndContext>
+        </Box>
+      )}
 
       {/* Filters */}
       <Box sx={{ mb: 3 }}>
@@ -199,8 +359,8 @@ export default function TeamBuilderPage() {
           <LuminaryIcon
             key={l.slug}
             luminary={l}
-            selected={selected.has(l.slug)}
-            disabled={!selected.has(l.slug) && selected.size >= MAX}
+            selected={selectedSet.has(l.slug)}
+            disabled={!selectedSet.has(l.slug) && orderedSlugs.length >= MAX}
             onClick={() => toggle(l.slug)}
             size={96}
             showName
@@ -208,7 +368,7 @@ export default function TeamBuilderPage() {
         ))}
       </Stack>
 
-      {selected.size > 0 && (
+      {orderedSlugs.length > 0 && (
         <Box sx={{ position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)' }}>
           <Button
             variant="contained"
