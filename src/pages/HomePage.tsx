@@ -10,7 +10,7 @@ import {
 } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
 import { useLuminaries } from '../hooks/useLuminaries'
-import FilterChip from '../components/FilterChip'
+import FilterChip, { type FilterState } from '../components/FilterChip'
 import LuminaryIcon from '../components/LuminaryIcon'
 import { FACTION_COLORS, factionIconUrl } from '../constants/factions'
 import { CLASS_COLORS, classIconUrl } from '../constants/classes'
@@ -18,6 +18,41 @@ import { TIER_COLORS } from '../constants/colors'
 import type { Luminary } from '../types/luminary'
 
 const TIERS = ['SS', 'S+', 'S', 'A+', 'A', 'B+', 'B', 'C+', 'C']
+
+function cycleClassFilter(prev: Map<string, FilterState>, key: string): Map<string, FilterState> {
+  const next = new Map(prev)
+  if (next.get(key) === 'inclusive') next.delete(key)
+  else next.set(key, 'inclusive')
+  return next
+}
+
+function cycleFactionFilter(prev: Map<string, FilterState>, key: string): Map<string, FilterState> {
+  const next = new Map(prev)
+  const current = next.get(key) ?? 'off'
+  if (current === 'off') {
+    // At max exclusive, evict the oldest before adding new inclusive
+    const exclusiveCount = [...next.values()].filter((v) => v === 'exclusive').length
+    if (exclusiveCount >= 2) {
+      for (const [k, v] of next.entries()) {
+        if (v === 'exclusive') {
+          next.delete(k)
+          break
+        }
+      }
+    }
+    next.set(key, 'inclusive')
+  } else if (current === 'inclusive') {
+    next.set(key, 'exclusive')
+    // At 2 exclusive the filter is fully constrained — drop any remaining inclusive
+    const exclusiveCount = [...next.values()].filter((v) => v === 'exclusive').length
+    if (exclusiveCount >= 2) {
+      ;[...next.entries()].filter(([, v]) => v === 'inclusive').forEach(([k]) => next.delete(k))
+    }
+  } else {
+    next.delete(key)
+  }
+  return next
+}
 
 function TierRow({
   tier,
@@ -74,8 +109,8 @@ export default function HomePage() {
   const { data: luminaries = [], isLoading } = useLuminaries()
   const navigate = useNavigate()
   const [mode, setMode] = useState<'overall' | 'pve' | 'pvp'>('overall')
-  const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set())
-  const [selectedFactions, setSelectedFactions] = useState<Set<string>>(new Set())
+  const [classFilters, setClassFilters] = useState<Map<string, FilterState>>(new Map())
+  const [factionFilters, setFactionFilters] = useState<Map<string, FilterState>>(new Map())
 
   const classes = useMemo(
     () => [...new Set(luminaries.map((l: Luminary) => l.class))].sort(),
@@ -86,23 +121,30 @@ export default function HomePage() {
     [luminaries]
   )
 
-  const filtered = useMemo(
-    () =>
-      luminaries.filter((l: Luminary) => {
-        if (selectedClasses.size > 0 && !selectedClasses.has(l.class)) return false
-        if (selectedFactions.size > 0 && !(l.factions ?? []).some((f) => selectedFactions.has(f)))
-          return false
-        return true
-      }),
-    [luminaries, selectedClasses, selectedFactions]
-  )
+  const hasActiveFilters = classFilters.size > 0 || factionFilters.size > 0
 
-  const toggle = (prev: Set<string>, val: string): Set<string> => {
-    const s = new Set(prev)
-    if (s.has(val)) s.delete(val)
-    else s.add(val)
-    return s
-  }
+  const filtered = useMemo(() => {
+    const activeClasses = new Set(classFilters.keys())
+
+    const inclusiveFactions = new Set<string>()
+    const exclusiveFactions = new Set<string>()
+    factionFilters.forEach((state, faction) => {
+      if (state === 'inclusive') inclusiveFactions.add(faction)
+      else if (state === 'exclusive') exclusiveFactions.add(faction)
+    })
+
+    return luminaries.filter((l: Luminary) => {
+      if (activeClasses.size > 0 && !activeClasses.has(l.class)) return false
+
+      const lFactions = l.factions ?? []
+      if (inclusiveFactions.size > 0 && !lFactions.some((f) => inclusiveFactions.has(f)))
+        return false
+      if (exclusiveFactions.size > 0 && ![...exclusiveFactions].every((f) => lFactions.includes(f)))
+        return false
+
+      return true
+    })
+  }, [luminaries, classFilters, factionFilters])
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
@@ -184,8 +226,8 @@ export default function HomePage() {
               <FilterChip
                 key={c}
                 label={c}
-                selected={selectedClasses.has(c)}
-                onClick={() => setSelectedClasses((p) => toggle(p, c))}
+                filterState={classFilters.get(c) ?? 'off'}
+                onClick={() => setClassFilters((p) => cycleClassFilter(p, c))}
                 iconUrl={classIconUrl(c)}
                 accentColor={CLASS_COLORS[c]}
               />
@@ -203,14 +245,29 @@ export default function HomePage() {
               <FilterChip
                 key={f}
                 label={f}
-                selected={selectedFactions.has(f)}
-                onClick={() => setSelectedFactions((p) => toggle(p, f))}
+                filterState={factionFilters.get(f) ?? 'off'}
+                onClick={() => setFactionFilters((p) => cycleFactionFilter(p, f))}
                 iconUrl={factionIconUrl(f)}
                 accentColor={FACTION_COLORS[f]}
               />
             ))}
           </Box>
         </Box>
+
+        {/* Clear filters button */}
+        {hasActiveFilters && (
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => {
+              setClassFilters(new Map())
+              setFactionFilters(new Map())
+            }}
+            sx={{ flexShrink: 0, alignSelf: 'center', mt: { xs: 0, md: 2 } }}
+          >
+            Clear Filters
+          </Button>
+        )}
       </Box>
 
       {isLoading ? (
