@@ -22,6 +22,7 @@ export default function FilterChip({ label, selected, onClick, iconUrl, accentCo
         alignItems: 'center',
         gap: 0.5,
         mr: 0.5,
+        mb: 0.5,
         cursor: 'pointer',
         opacity: selected ? 1 : 0.45,
         transition: 'opacity 0.15s ease, transform 0.15s ease',

@@ -125,108 +125,102 @@ export default function HomePage() {
         </Button>
       </Box>
 
-      <ToggleButtonGroup
-        value={mode}
-        exclusive
-        onChange={(_, v) => {
-          if (v) setMode(v)
-        }}
-        size="small"
-        sx={{
-          mb: 3,
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          p: 0.5,
-          gap: 0.5,
-          '& .MuiToggleButtonGroup-grouped': {
-            border: 0,
-            borderRadius: '6px !important',
-          },
-        }}
-      >
-        {(
-          [
-            ['overall', 'All'],
-            ['pve', 'PvE'],
-            ['pvp', 'PvP'],
-          ] as const
-        ).map(([val, label]) => (
-          <ToggleButton
-            key={val}
-            value={val}
-            sx={{
-              px: 3,
-              py: 0.75,
-              fontWeight: 600,
-              fontSize: '0.8rem',
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-              color: 'text.secondary',
-              '&.Mui-selected': {
-                bgcolor: 'primary.main',
-                color: '#0f0f1a',
-                '&:hover': { bgcolor: 'primary.main' },
-              },
-            }}
-          >
-            {label}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
-
       <Box
         sx={{
           display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          rowGap: 0.5,
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'flex-start', md: 'center' },
+          gap: 3,
           mb: 3,
         }}
       >
-        <Typography
-          variant="overline"
-          sx={{ color: 'text.secondary', flexShrink: 0, mr: 0.75, lineHeight: 1 }}
-        >
-          Class
-        </Typography>
-        {classes.map((c) => (
-          <FilterChip
-            key={c}
-            label={c}
-            selected={selectedClasses.has(c)}
-            onClick={() => setSelectedClasses((p) => toggle(p, c))}
-            iconUrl={classIconUrl(c)}
-            accentColor={CLASS_COLORS[c]}
-          />
-        ))}
-
-        <Box
-          sx={{
-            width: '1px',
-            height: 40,
-            bgcolor: 'divider',
-            flexShrink: 0,
-            mx: 1.5,
-            alignSelf: 'center',
+        {/* Mode toggle — left */}
+        <ToggleButtonGroup
+          value={mode}
+          exclusive
+          onChange={(_, v) => {
+            if (v) setMode(v)
           }}
-        />
-
-        <Typography
-          variant="overline"
-          sx={{ color: 'text.secondary', flexShrink: 0, mr: 0.75, lineHeight: 1 }}
+          size="small"
+          sx={{
+            flexShrink: 0,
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            p: 0.5,
+            gap: 0.5,
+            '& .MuiToggleButtonGroup-grouped': {
+              border: 0,
+              borderRadius: '6px !important',
+            },
+          }}
         >
-          Faction
-        </Typography>
-        {factions.map((f) => (
-          <FilterChip
-            key={f}
-            label={f}
-            selected={selectedFactions.has(f)}
-            onClick={() => setSelectedFactions((p) => toggle(p, f))}
-            iconUrl={factionIconUrl(f)}
-            accentColor={FACTION_COLORS[f]}
-          />
-        ))}
+          {(
+            [
+              ['overall', 'All'],
+              ['pve', 'PvE'],
+              ['pvp', 'PvP'],
+            ] as const
+          ).map(([val, label]) => (
+            <ToggleButton
+              key={val}
+              value={val}
+              sx={{
+                px: 3,
+                py: 1.5,
+                fontWeight: 600,
+                fontSize: '0.8rem',
+                letterSpacing: '0.05em',
+                textTransform: 'uppercase',
+                color: 'text.secondary',
+                '&.Mui-selected': {
+                  bgcolor: 'primary.main',
+                  color: '#0f0f1a',
+                  '&:hover': { bgcolor: 'primary.main' },
+                },
+              }}
+            >
+              {label}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+
+        {/* Class filter */}
+        <Box>
+          <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block' }}>
+            Class
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+            {classes.map((c) => (
+              <FilterChip
+                key={c}
+                label={c}
+                selected={selectedClasses.has(c)}
+                onClick={() => setSelectedClasses((p) => toggle(p, c))}
+                iconUrl={classIconUrl(c)}
+                accentColor={CLASS_COLORS[c]}
+              />
+            ))}
+          </Box>
+        </Box>
+
+        {/* Faction filter */}
+        <Box>
+          <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block' }}>
+            Faction
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+            {factions.map((f) => (
+              <FilterChip
+                key={f}
+                label={f}
+                selected={selectedFactions.has(f)}
+                onClick={() => setSelectedFactions((p) => toggle(p, f))}
+                iconUrl={factionIconUrl(f)}
+                accentColor={FACTION_COLORS[f]}
+              />
+            ))}
+          </Box>
+        </Box>
       </Box>
 
       {isLoading ? (
