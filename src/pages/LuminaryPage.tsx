@@ -5,6 +5,7 @@ import { useLuminaries } from '../hooks/useLuminaries'
 import { imageUrl } from '../api/client'
 import { FACTION_COLORS, factionIconUrl } from '../constants/factions'
 import { classIconUrl } from '../constants/classes'
+import StatusText from '../components/StatusText'
 
 const BG = '#0f0f1a'
 
@@ -357,6 +358,33 @@ export default function LuminaryPage() {
                         {g.slot}
                         {g.set ? ` · ${g.set}` : ''}
                       </Typography>
+                      {g.bonus_effect && (
+                        <Box
+                          sx={{
+                            mt: 1,
+                            pt: 1,
+                            borderTop: '1px solid rgba(255,255,255,0.1)',
+                          }}
+                        >
+                          {g.bonus_type && (
+                            <Typography
+                              sx={{
+                                fontSize: '0.65rem',
+                                fontWeight: 700,
+                                color: '#f59e0b',
+                                textTransform: 'uppercase',
+                                letterSpacing: 0.5,
+                                mb: 0.5,
+                              }}
+                            >
+                              {g.bonus_type}
+                            </Typography>
+                          )}
+                          <Typography sx={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.75)' }}>
+                            {g.bonus_effect}
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
                   }
                   placement="top"
@@ -478,15 +506,12 @@ export default function LuminaryPage() {
                           />
                         )}
                       </Box>
-                      <Typography
-                        sx={{
-                          color: 'rgba(255,255,255,0.7)',
-                          fontSize: '0.9rem',
-                          lineHeight: 1.65,
-                        }}
-                      >
-                        {sk.description}
-                      </Typography>
+                      <StatusText
+                        text={sk.description}
+                        color="rgba(255,255,255,0.7)"
+                        fontSize="0.9rem"
+                        sx={{ lineHeight: 1.65, display: 'block' }}
+                      />
                     </Box>
                   </Box>
                 )
@@ -544,11 +569,12 @@ export default function LuminaryPage() {
                       Level {lvl.level}
                     </Typography>
                   </Box>
-                  <Typography
-                    sx={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1.65, fontSize: '0.9rem' }}
-                  >
-                    {lvl.description}
-                  </Typography>
+                  <StatusText
+                    text={lvl.description}
+                    color="rgba(255,255,255,0.7)"
+                    fontSize="0.9rem"
+                    sx={{ lineHeight: 1.65, display: 'block' }}
+                  />
                 </Box>
               ))}
             </Stack>

@@ -3,6 +3,7 @@ import { imageUrl } from '../api/client'
 import { FACTION_COLORS, factionIconUrl } from '../constants/factions'
 import { classIconUrl } from '../constants/classes'
 import type { Luminary } from '../types/luminary'
+import StatusText from './StatusText'
 
 const RARITY_COLORS: Record<string, string> = {
   'SSR EX': '#0d9488',
@@ -199,67 +200,117 @@ function TooltipContent({ l }: { l: Luminary }) {
             </Typography>
             <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
               {gear.map((g) => (
-                <Box
+                <Tooltip
                   key={g.name}
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 0.4,
-                    width: 56,
-                  }}
+                  title={
+                    g.bonus_effect ? (
+                      <Box sx={{ maxWidth: 220 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.78rem', mb: 0.25 }}>
+                          {g.name}
+                        </Typography>
+                        <Typography
+                          sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', mb: 0.75 }}
+                        >
+                          {g.slot}
+                          {g.set ? ` · ${g.set}` : ''}
+                        </Typography>
+                        {g.bonus_type && (
+                          <Typography
+                            sx={{
+                              fontSize: '0.62rem',
+                              fontWeight: 700,
+                              color: '#f59e0b',
+                              textTransform: 'uppercase',
+                              letterSpacing: 0.4,
+                              mb: 0.4,
+                            }}
+                          >
+                            {g.bonus_type}
+                          </Typography>
+                        )}
+                        <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.75)' }}>
+                          {g.bonus_effect}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box sx={{ maxWidth: 180 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.78rem', mb: 0.25 }}>
+                          {g.name}
+                        </Typography>
+                        <Typography sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>
+                          {g.slot}
+                          {g.set ? ` · ${g.set}` : ''}
+                        </Typography>
+                      </Box>
+                    )
+                  }
+                  placement="top"
+                  arrow
+                  enterDelay={300}
+                  enterNextDelay={300}
                 >
                   <Box
                     sx={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 1.5,
-                      bgcolor: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(255,255,255,0.12)',
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      overflow: 'hidden',
-                      flexShrink: 0,
+                      gap: 0.4,
+                      width: 56,
+                      cursor: 'default',
                     }}
                   >
-                    {g.images?.path ? (
-                      <Box
-                        component="img"
-                        src={imageUrl(g.images.path)}
-                        alt={g.name}
-                        sx={{ width: 40, height: 40, objectFit: 'contain' }}
-                        onError={(e) => {
-                          const el = e.target as HTMLImageElement
-                          el.style.display = 'none'
-                          el.parentElement!.innerHTML = `<span style="font-size:10px;color:rgba(255,255,255,0.4);text-align:center;padding:2px">${g.slot[0]}</span>`
-                        }}
-                      />
-                    ) : (
-                      <Typography
-                        sx={{
-                          fontSize: '0.65rem',
-                          color: 'rgba(255,255,255,0.3)',
-                          textAlign: 'center',
-                          px: 0.5,
-                        }}
-                      >
-                        {g.slot[0]}
-                      </Typography>
-                    )}
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 1.5,
+                        bgcolor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {g.images?.path ? (
+                        <Box
+                          component="img"
+                          src={imageUrl(g.images.path)}
+                          alt={g.name}
+                          sx={{ width: 40, height: 40, objectFit: 'contain' }}
+                          onError={(e) => {
+                            const el = e.target as HTMLImageElement
+                            el.style.display = 'none'
+                            el.parentElement!.innerHTML = `<span style="font-size:10px;color:rgba(255,255,255,0.4);text-align:center;padding:2px">${g.slot[0]}</span>`
+                          }}
+                        />
+                      ) : (
+                        <Typography
+                          sx={{
+                            fontSize: '0.65rem',
+                            color: 'rgba(255,255,255,0.3)',
+                            textAlign: 'center',
+                            px: 0.5,
+                          }}
+                        >
+                          {g.slot[0]}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Typography
+                      sx={{
+                        fontSize: '0.58rem',
+                        color: 'rgba(255,255,255,0.5)',
+                        textAlign: 'center',
+                        lineHeight: 1.2,
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {g.name}
+                    </Typography>
                   </Box>
-                  <Typography
-                    sx={{
-                      fontSize: '0.58rem',
-                      color: 'rgba(255,255,255,0.5)',
-                      textAlign: 'center',
-                      lineHeight: 1.2,
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {g.name}
-                  </Typography>
-                </Box>
+                </Tooltip>
               ))}
             </Stack>
           </Box>
@@ -343,17 +394,16 @@ function TooltipContent({ l }: { l: Luminary }) {
                               />
                             )}
                           </Box>
-                          <Typography
-                            sx={{
-                              color: 'rgba(255,255,255,0.55)',
-                              fontSize: '0.71rem',
-                              lineHeight: 1.5,
-                            }}
-                          >
-                            {sk.description.length > 160
-                              ? `${sk.description.slice(0, 160)}…`
-                              : sk.description}
-                          </Typography>
+                          <StatusText
+                            text={
+                              sk.description.length > 160
+                                ? `${sk.description.slice(0, 160)}…`
+                                : sk.description
+                            }
+                            color="rgba(255,255,255,0.55)"
+                            fontSize="0.71rem"
+                            sx={{ lineHeight: 1.5, display: 'block' }}
+                          />
                         </Box>
                       </Box>
                     )
@@ -420,15 +470,12 @@ function TooltipContent({ l }: { l: Luminary }) {
                           Lv {lvl.level}
                         </Typography>
                       </Box>
-                      <Typography
-                        sx={{
-                          color: 'rgba(255,255,255,0.6)',
-                          fontSize: '0.71rem',
-                          lineHeight: 1.55,
-                        }}
-                      >
-                        {lvl.description}
-                      </Typography>
+                      <StatusText
+                        text={lvl.description}
+                        color="rgba(255,255,255,0.6)"
+                        fontSize="0.71rem"
+                        sx={{ lineHeight: 1.55, display: 'block' }}
+                      />
                     </Box>
                   ))}
                 </Stack>

@@ -21,6 +21,8 @@ export interface GearItem {
   slot: string
   set?: string
   images?: { path: string }
+  bonus_type?: string
+  bonus_effect?: string
 }
 
 export interface Luminary {
