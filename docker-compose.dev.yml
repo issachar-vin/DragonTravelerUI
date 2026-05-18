@@ -1,0 +1,30 @@
+# Development compose — runs the Vite dev server with HMR.
+# Use instead of docker-compose.yml during development.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d
+#   make dev   (shorthand)
+#
+# On first run Docker creates the ui_node_modules volume from the image's
+# node_modules. If you add/remove packages, run:
+#   docker compose -f docker-compose.dev.yml down -v
+#   make dev
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - '5173:5173'
+    volumes:
+      - .:/app
+      - ui_node_modules:/app/node_modules
+    environment:
+      VITE_API_URL: http://localhost:8000
+      # Forces chokidar to use polling — needed for reliable HMR inside Docker
+      # on macOS and Windows (inotify events don't propagate through the VM layer).
+      CHOKIDAR_USEPOLLING: 'true'
+
+volumes:
+  ui_node_modules:
