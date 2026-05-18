@@ -1,21 +1,8 @@
 import { Box, Tooltip, Typography } from '@mui/material'
 import { imageUrl } from '../api/client'
 import { useSubclasses } from '../hooks/useSubclasses'
+import { TOOLTIP_SLOT_PROPS } from '../constants/tooltips'
 import type { Subclass } from '../types/subclass'
-
-const TOOLTIP_PROPS = {
-  tooltip: {
-    sx: {
-      bgcolor: '#12122a',
-      border: '1px solid rgba(255,255,255,0.12)',
-      borderRadius: 2,
-      p: 1.5,
-      maxWidth: 'none',
-      boxShadow: '0 6px 24px rgba(0,0,0,0.55)',
-    },
-  },
-  arrow: { sx: { color: '#12122a' } },
-}
 
 function SubclassTooltipContent({ sub, name }: { sub?: Subclass; name: string }) {
   return (
@@ -79,7 +66,7 @@ export default function SubclassIcon({
       arrow
       enterDelay={300}
       enterNextDelay={300}
-      slotProps={TOOLTIP_PROPS}
+      slotProps={TOOLTIP_SLOT_PROPS}
     >
       <Box
         sx={{

@@ -7,6 +7,8 @@ import { FACTION_COLORS, factionIconUrl } from '../constants/factions'
 import { classIconUrl } from '../constants/classes'
 import StatusText from '../components/StatusText'
 import SubclassIcon from '../components/SubclassIcon'
+import GearTooltipContent from '../components/GearTooltipContent'
+import { TOOLTIP_SLOT_PROPS } from '../constants/tooltips'
 
 const BG = '#0f0f1a'
 
@@ -325,55 +327,12 @@ export default function LuminaryPage() {
               {l.recommended_gear.map((g) => (
                 <Tooltip
                   key={g.name}
-                  title={
-                    <Box>
-                      <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                        {g.name}
-                      </Typography>
-                      <Typography sx={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)' }}>
-                        {g.slot}
-                        {g.set ? ` · ${g.set}` : ''}
-                      </Typography>
-                      {g.bonus_effect && (
-                        <Box sx={{ mt: 1, pt: 1, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                          {g.bonus_type && (
-                            <Typography
-                              sx={{
-                                fontSize: '0.65rem',
-                                fontWeight: 700,
-                                color: '#f59e0b',
-                                textTransform: 'uppercase',
-                                letterSpacing: 0.5,
-                                mb: 0.5,
-                              }}
-                            >
-                              {g.bonus_type}
-                            </Typography>
-                          )}
-                          <Typography sx={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.75)' }}>
-                            {g.bonus_effect}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  }
+                  title={<GearTooltipContent g={g} />}
                   placement="top"
                   arrow
                   enterDelay={500}
                   enterNextDelay={500}
-                  slotProps={{
-                    tooltip: {
-                      sx: {
-                        bgcolor: '#12122a',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        borderRadius: 2,
-                        p: 1.5,
-                        maxWidth: 'none',
-                        boxShadow: '0 6px 24px rgba(0,0,0,0.55)',
-                      },
-                    },
-                    arrow: { sx: { color: '#12122a' } },
-                  }}
+                  slotProps={TOOLTIP_SLOT_PROPS}
                 >
                   <Box
                     sx={{

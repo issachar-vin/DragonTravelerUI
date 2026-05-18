@@ -5,6 +5,8 @@ import { classIconUrl } from '../constants/classes'
 import type { Luminary } from '../types/luminary'
 import StatusText from './StatusText'
 import SubclassIcon from './SubclassIcon'
+import GearTooltipContent from './GearTooltipContent'
+import { TOOLTIP_SLOT_PROPS } from '../constants/tooltips'
 
 const RARITY_COLORS: Record<string, string> = {
   'SSR EX': '#0d9488',
@@ -174,52 +176,12 @@ function TooltipContent({ l }: { l: Luminary }) {
               {gear.map((g) => (
                 <Tooltip
                   key={g.name}
-                  title={
-                    g.bonus_effect ? (
-                      <Box sx={{ maxWidth: 220 }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.78rem', mb: 0.25 }}>
-                          {g.name}
-                        </Typography>
-                        <Typography
-                          sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', mb: 0.75 }}
-                        >
-                          {g.slot}
-                          {g.set ? ` · ${g.set}` : ''}
-                        </Typography>
-                        {g.bonus_type && (
-                          <Typography
-                            sx={{
-                              fontSize: '0.62rem',
-                              fontWeight: 700,
-                              color: '#f59e0b',
-                              textTransform: 'uppercase',
-                              letterSpacing: 0.4,
-                              mb: 0.4,
-                            }}
-                          >
-                            {g.bonus_type}
-                          </Typography>
-                        )}
-                        <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.75)' }}>
-                          {g.bonus_effect}
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Box sx={{ maxWidth: 180 }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.78rem', mb: 0.25 }}>
-                          {g.name}
-                        </Typography>
-                        <Typography sx={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)' }}>
-                          {g.slot}
-                          {g.set ? ` · ${g.set}` : ''}
-                        </Typography>
-                      </Box>
-                    )
-                  }
+                  title={<GearTooltipContent g={g} />}
                   placement="top"
                   arrow
                   enterDelay={300}
                   enterNextDelay={300}
+                  slotProps={TOOLTIP_SLOT_PROPS}
                 >
                   <Box
                     sx={{

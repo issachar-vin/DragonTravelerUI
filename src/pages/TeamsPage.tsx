@@ -23,56 +23,11 @@ import { useTeams, useDeleteTeam } from '../hooks/useTeams'
 import { useLuminaries } from '../hooks/useLuminaries'
 import LuminaryIcon from '../components/LuminaryIcon'
 import SubclassIcon from '../components/SubclassIcon'
+import GearTooltipContent from '../components/GearTooltipContent'
+import { TOOLTIP_SLOT_PROPS } from '../constants/tooltips'
 import { imageUrl } from '../api/client'
 import type { Team } from '../types/team'
 import type { Luminary, GearItem as GearItemType } from '../types/luminary'
-
-// ── Styled gear tooltip ───────────────────────────────────────────────────────
-
-function GearTooltipContent({ g }: { g: GearItemType }) {
-  return (
-    <Box sx={{ maxWidth: 260 }}>
-      <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', mb: 0.25, color: '#fff' }}>
-        {g.name}
-      </Typography>
-      <Typography
-        sx={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', mb: g.bonus_effect ? 1 : 0 }}
-      >
-        {g.slot}
-        {g.set ? ` · ${g.set}` : ''}
-      </Typography>
-      {g.bonus_effect && (
-        <Box
-          sx={{
-            mt: 0.75,
-            pt: 0.75,
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-          }}
-        >
-          {g.bonus_type && (
-            <Typography
-              sx={{
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                color: '#f59e0b',
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-                mb: 0.4,
-              }}
-            >
-              {g.bonus_type}
-            </Typography>
-          )}
-          <Typography
-            sx={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.78)', lineHeight: 1.5 }}
-          >
-            {g.bonus_effect}
-          </Typography>
-        </Box>
-      )}
-    </Box>
-  )
-}
 
 function GearItemCard({ g }: { g: GearItemType }) {
   return (
@@ -82,19 +37,7 @@ function GearItemCard({ g }: { g: GearItemType }) {
       arrow
       enterDelay={300}
       enterNextDelay={300}
-      slotProps={{
-        tooltip: {
-          sx: {
-            bgcolor: '#12122a',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: 2,
-            p: 1.5,
-            maxWidth: 'none',
-            boxShadow: '0 6px 24px rgba(0,0,0,0.55)',
-          },
-        },
-        arrow: { sx: { color: '#12122a' } },
-      }}
+      slotProps={TOOLTIP_SLOT_PROPS}
     >
       <Box
         sx={{
