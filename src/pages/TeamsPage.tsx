@@ -354,9 +354,11 @@ function SubclassIcon({
 function ExpandedLuminaryRow({
   l,
   subclassMap,
+  onNavigate,
 }: {
   l: Luminary
   subclassMap: Map<string, Subclass>
+  onNavigate: (path: string) => void
 }) {
   // Deduplicate set bonuses from recommended gear
   const activeSets: SetBonusInfo[] = [
@@ -390,7 +392,11 @@ function ExpandedLuminaryRow({
       >
         {/* Luminary icon */}
         <Box sx={{ flexShrink: 0 }}>
-          <LuminaryIcon luminary={l} size={75} />
+          <LuminaryIcon
+            luminary={l}
+            size={75}
+            onClick={() => onNavigate(`/luminaries/${l.slug}`)}
+          />
         </Box>
 
         {/* Gear icons */}
@@ -524,7 +530,18 @@ export default function TeamsPage() {
               <Stack direction="row" spacing={0.75} sx={{ flex: 1 }}>
                 {team.luminary_slugs.map((slug) => {
                   const l = bySlug[slug]
-                  return l ? <LuminaryIcon key={slug} luminary={l} size={60} /> : null
+                  return l ? (
+                    <Box
+                      key={slug}
+                      component="span"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/luminaries/${slug}`)
+                      }}
+                    >
+                      <LuminaryIcon luminary={l} size={60} />
+                    </Box>
+                  ) : null
                 })}
               </Stack>
               <IconButton
@@ -556,7 +573,12 @@ export default function TeamsPage() {
                 {team.luminary_slugs.map((slug) => {
                   const l = bySlug[slug]
                   return l ? (
-                    <ExpandedLuminaryRow key={slug} l={l} subclassMap={subclassMap} />
+                    <ExpandedLuminaryRow
+                      key={slug}
+                      l={l}
+                      subclassMap={subclassMap}
+                      onNavigate={navigate}
+                    />
                   ) : null
                 })}
               </Box>
