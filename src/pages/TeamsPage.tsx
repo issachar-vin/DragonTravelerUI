@@ -253,17 +253,33 @@ function SubclassIcon({
   return (
     <Tooltip
       title={
-        <Box sx={{ maxWidth: 260 }}>
-          <Typography
-            sx={{
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              color: '#fff',
-              mb: sub?.description ? 0.5 : 0,
-            }}
-          >
+        <Box sx={{ maxWidth: 280 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff', mb: 0.5 }}>
             {name}
           </Typography>
+          {sub?.attributes && sub.attributes.length > 0 && (
+            <Box
+              sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: sub?.description ? 0.75 : 0 }}
+            >
+              {sub.attributes.map((attr) => (
+                <Box
+                  key={attr}
+                  sx={{
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    color: '#86efac',
+                    bgcolor: 'rgba(134,239,172,0.1)',
+                    border: '1px solid rgba(134,239,172,0.25)',
+                    borderRadius: 0.75,
+                    px: 0.75,
+                    py: 0.25,
+                  }}
+                >
+                  {attr}
+                </Box>
+              ))}
+            </Box>
+          )}
           {sub?.description && (
             <Typography
               sx={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.72)', lineHeight: 1.5 }}
