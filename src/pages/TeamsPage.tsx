@@ -455,7 +455,7 @@ export default function TeamsPage() {
   const { data: subclasses = [] } = useSubclasses()
   const deleteTeam = useDeleteTeam()
   const navigate = useNavigate()
-  const [expanded, setExpanded] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const bySlug: Record<string, Luminary> = Object.fromEntries(
@@ -495,7 +495,7 @@ export default function TeamsPage() {
       )}
 
       {teams.map((team: Team) => {
-        const isOpen = expanded === team.id
+        const isOpen = expanded.has(team.id)
         return (
           <Box
             key={team.id}
@@ -509,7 +509,14 @@ export default function TeamsPage() {
                 cursor: 'pointer',
                 '&:hover': { bgcolor: 'action.hover' },
               }}
-              onClick={() => setExpanded(isOpen ? null : team.id)}
+              onClick={() =>
+                setExpanded((prev) => {
+                  const next = new Set(prev)
+                  if (next.has(team.id)) next.delete(team.id)
+                  else next.add(team.id)
+                  return next
+                })
+              }
             >
               <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 2, minWidth: 120 }}>
                 {team.name}

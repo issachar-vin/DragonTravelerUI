@@ -174,37 +174,59 @@ export default function HomePage() {
         ))}
       </ToggleButtonGroup>
 
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="overline" sx={{ color: 'text.secondary' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          rowGap: 0.5,
+          mb: 3,
+        }}
+      >
+        <Typography
+          variant="overline"
+          sx={{ color: 'text.secondary', flexShrink: 0, mr: 0.75, lineHeight: 1 }}
+        >
           Class
         </Typography>
-        <Stack direction="row" sx={{ flexWrap: 'wrap', mb: 1 }}>
-          {classes.map((c) => (
-            <FilterChip
-              key={c}
-              label={c}
-              selected={selectedClasses.has(c)}
-              onClick={() => setSelectedClasses((p) => toggle(p, c))}
-              iconUrl={classIconUrl(c)}
-              accentColor={CLASS_COLORS[c]}
-            />
-          ))}
-        </Stack>
-        <Typography variant="overline" sx={{ color: 'text.secondary' }}>
+        {classes.map((c) => (
+          <FilterChip
+            key={c}
+            label={c}
+            selected={selectedClasses.has(c)}
+            onClick={() => setSelectedClasses((p) => toggle(p, c))}
+            iconUrl={classIconUrl(c)}
+            accentColor={CLASS_COLORS[c]}
+          />
+        ))}
+
+        <Box
+          sx={{
+            width: '1px',
+            height: 40,
+            bgcolor: 'divider',
+            flexShrink: 0,
+            mx: 1.5,
+            alignSelf: 'center',
+          }}
+        />
+
+        <Typography
+          variant="overline"
+          sx={{ color: 'text.secondary', flexShrink: 0, mr: 0.75, lineHeight: 1 }}
+        >
           Faction
         </Typography>
-        <Stack direction="row" sx={{ flexWrap: 'wrap' }}>
-          {factions.map((f) => (
-            <FilterChip
-              key={f}
-              label={f}
-              selected={selectedFactions.has(f)}
-              onClick={() => setSelectedFactions((p) => toggle(p, f))}
-              iconUrl={factionIconUrl(f)}
-              accentColor={FACTION_COLORS[f]}
-            />
-          ))}
-        </Stack>
+        {factions.map((f) => (
+          <FilterChip
+            key={f}
+            label={f}
+            selected={selectedFactions.has(f)}
+            onClick={() => setSelectedFactions((p) => toggle(p, f))}
+            iconUrl={factionIconUrl(f)}
+            accentColor={FACTION_COLORS[f]}
+          />
+        ))}
       </Box>
 
       {isLoading ? (
