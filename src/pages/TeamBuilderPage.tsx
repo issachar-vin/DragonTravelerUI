@@ -280,7 +280,7 @@ export default function TeamBuilderPage() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
 
   // Fixed-position tracking — captured once at drag start so DOM reorders can't loop back
-  const listRef = useRef<HTMLElement | null>(null)
+  const listRef = useRef<HTMLDivElement | null>(null)
   const initialListTop = useRef(0)
   const initialPointerY = useRef(0)
   const slugsAtDragStart = useRef<string[]>([])
@@ -557,7 +557,7 @@ export default function TeamBuilderPage() {
                     <FilterChip
                       key={c}
                       label={c}
-                      selected={selectedClasses.has(c)}
+                      filterState={selectedClasses.has(c) ? 'inclusive' : 'off'}
                       onClick={() => setSelectedClasses((p) => toggleFilter(p, c))}
                       iconUrl={classIconUrl(c)}
                       accentColor={CLASS_COLORS[c]}
@@ -575,7 +575,7 @@ export default function TeamBuilderPage() {
                     <FilterChip
                       key={f}
                       label={f}
-                      selected={selectedFactions.has(f)}
+                      filterState={selectedFactions.has(f) ? 'inclusive' : 'off'}
                       onClick={() => setSelectedFactions((p) => toggleFilter(p, f))}
                       iconUrl={factionIconUrl(f)}
                       accentColor={FACTION_COLORS[f]}
