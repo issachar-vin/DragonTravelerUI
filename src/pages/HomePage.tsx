@@ -30,24 +30,16 @@ function cycleFactionFilter(prev: Map<string, FilterState>, key: string): Map<st
   const next = new Map(prev)
   const current = next.get(key) ?? 'off'
   if (current === 'off') {
-    // At max exclusive, evict the oldest before adding new inclusive
-    const exclusiveCount = [...next.values()].filter((v) => v === 'exclusive').length
-    if (exclusiveCount >= 2) {
-      for (const [k, v] of next.entries()) {
-        if (v === 'exclusive') {
-          next.delete(k)
-          break
-        }
-      }
-    }
     next.set(key, 'inclusive')
   } else if (current === 'inclusive') {
-    next.set(key, 'exclusive')
-    // At 2 exclusive the filter is fully constrained — drop any remaining inclusive
-    const exclusiveCount = [...next.values()].filter((v) => v === 'exclusive').length
-    if (exclusiveCount >= 2) {
-      ;[...next.entries()].filter(([, v]) => v === 'inclusive').forEach(([k]) => next.delete(k))
+    // Evict any existing exclusive before promoting this one
+    for (const [k, v] of next.entries()) {
+      if (v === 'exclusive') {
+        next.delete(k)
+        break
+      }
     }
+    next.set(key, 'exclusive')
   } else {
     next.delete(key)
   }
