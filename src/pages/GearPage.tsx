@@ -9,16 +9,17 @@ import type { GearItem } from '../types/luminary'
 const SLOTS = ['All', 'Headgear', 'Chestplate', 'Bracers', 'Boots', 'Weapon', 'Accessory']
 const TRANSITION = { duration: 0.25, ease: 'easeOut' } as const
 
-function toGearItem(piece: GearPiece): GearItem {
+function toGearItem(piece: GearPiece, setName?: string): GearItem {
   return {
     name: piece.name,
     slot: piece.slot,
+    set: setName,
     images: piece.images,
     piece_effect: piece.piece_effect,
   }
 }
 
-function PieceCard({ piece }: { piece: GearPiece }) {
+function PieceCard({ piece, setName }: { piece: GearPiece; setName?: string }) {
   return (
     <motion.div layoutId={piece.slug} layout transition={TRANSITION}>
       <Box
@@ -30,7 +31,7 @@ function PieceCard({ piece }: { piece: GearPiece }) {
           height: '100%',
         }}
       >
-        <GearTooltipContent g={toGearItem(piece)} />
+        <GearTooltipContent g={toGearItem(piece, setName)} />
       </Box>
     </motion.div>
   )
@@ -103,7 +104,7 @@ function SetsView({ filteredSets }: { filteredSets: GearSet[] }) {
             >
               {gs.pieces.map((piece) => (
                 <Box key={piece.slug} sx={{ flex: '1 1 260px', maxWidth: 360 }}>
-                  <PieceCard piece={piece} />
+                  <PieceCard piece={piece} setName={gs.name} />
                 </Box>
               ))}
             </Box>
@@ -114,12 +115,12 @@ function SetsView({ filteredSets }: { filteredSets: GearSet[] }) {
   )
 }
 
-function GridView({ allPieces }: { allPieces: GearPiece[] }) {
+function GridView({ allPieces }: { allPieces: { piece: GearPiece; setName: string }[] }) {
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-      {allPieces.map((piece) => (
+      {allPieces.map(({ piece, setName }) => (
         <Box key={piece.slug} sx={{ flex: '1 1 260px', maxWidth: 360 }}>
-          <PieceCard piece={piece} />
+          <PieceCard piece={piece} setName={setName} />
         </Box>
       ))}
     </Box>
@@ -138,7 +139,10 @@ export default function GearPage() {
       .filter((gs) => gs.pieces.length > 0)
   }, [gearSets, slot])
 
-  const allPieces = useMemo(() => filteredSets.flatMap((gs) => gs.pieces), [filteredSets])
+  const allPieces = useMemo(
+    () => filteredSets.flatMap((gs) => gs.pieces.map((piece) => ({ piece, setName: gs.name }))),
+    [filteredSets]
+  )
 
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', px: 3, py: 4 }}>
