@@ -24,6 +24,7 @@ import { useAuthStore } from '../store/authStore'
 
 const NAV_LINKS = [
   { label: 'Tier List', to: '/' },
+  { label: 'Gear', to: '/gear' },
   { label: 'Team Builder', to: '/team-builder' },
   { label: 'My Teams', to: '/teams' },
 ]
