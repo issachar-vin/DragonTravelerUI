@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import AdminPage from './pages/AdminPage'
 import LuminaryPage from './pages/LuminaryPage'
+import GearPage from './pages/GearPage'
 import { useAuthStore } from './store/authStore'
 import { getMe } from './api/auth'
 
@@ -49,6 +50,7 @@ export default function App() {
           }
         />
         <Route path="/luminaries/:slug" element={<LuminaryPage />} />
+        <Route path="/gear" element={<GearPage />} />
         <Route
           path="/admin"
           element={

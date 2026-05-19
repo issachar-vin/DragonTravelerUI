@@ -21,6 +21,7 @@ export interface GearItem {
   slot: string
   set?: string
   images?: { path: string }
+  piece_effect?: string
   bonus_type?: string
   bonus_effect?: string
 }
