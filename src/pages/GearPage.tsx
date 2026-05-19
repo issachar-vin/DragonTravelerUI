@@ -7,7 +7,7 @@ import type { GearSet, GearPiece } from '../types/gear'
 import type { GearItem } from '../types/luminary'
 
 const SLOTS = ['All', 'Headgear', 'Chestplate', 'Bracers', 'Boots', 'Weapon', 'Accessory']
-const TRANSITION = { duration: 0.25, ease: 'easeOut' }
+const TRANSITION = { duration: 0.25, ease: 'easeOut' } as const
 
 function toGearItem(piece: GearPiece): GearItem {
   return {
