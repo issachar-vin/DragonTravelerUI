@@ -1,10 +1,13 @@
 import { useState, useMemo } from 'react'
 import { Box, Typography, Skeleton, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { motion, LayoutGroup, AnimatePresence } from 'framer-motion'
 import { useGearSets } from '../hooks/useGearSets'
+import { useLuminaries } from '../hooks/useLuminaries'
 import GearTooltipContent from '../components/GearTooltipContent'
+import LuminaryIcon from '../components/LuminaryIcon'
 import type { GearSet, GearPiece } from '../types/gear'
-import type { GearItem } from '../types/luminary'
+import type { GearItem, Luminary } from '../types/luminary'
 
 const SLOTS = ['All', 'Headgear', 'Chestplate', 'Bracers', 'Boots', 'Weapon', 'Accessory']
 const TRANSITION = { duration: 0.25, ease: 'easeOut' } as const
@@ -19,25 +22,104 @@ function toGearItem(piece: GearPiece, setName?: string): GearItem {
   }
 }
 
-function PieceCard({ piece, setName }: { piece: GearPiece; setName?: string }) {
+function PieceCard({
+  piece,
+  setName,
+  luminaries,
+}: {
+  piece: GearPiece
+  setName?: string
+  luminaries: Luminary[]
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const hasLuminaries = luminaries.length > 0
+
   return (
     <motion.div layoutId={piece.slug} layout transition={TRANSITION}>
       <Box
         sx={{
           bgcolor: 'rgba(255,255,255,0.04)',
           borderRadius: 1.5,
-          p: 1.5,
           border: '1px solid rgba(255,255,255,0.06)',
-          height: '100%',
+          overflow: 'hidden',
         }}
       >
-        <GearTooltipContent g={toGearItem(piece, setName)} />
+        <Box sx={{ p: 1.5 }}>
+          <GearTooltipContent g={toGearItem(piece, setName)} />
+        </Box>
+
+        {hasLuminaries && (
+          <>
+            <Box
+              onClick={() => setExpanded((v) => !v)}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                px: 1.5,
+                py: 0.75,
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                cursor: 'pointer',
+                userSelect: 'none',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.04)' },
+              }}
+            >
+              <Typography
+                sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}
+              >
+                {luminaries.length} {luminaries.length === 1 ? 'luminary' : 'luminaries'}
+              </Typography>
+              <KeyboardArrowDownIcon
+                sx={{
+                  fontSize: 16,
+                  color: 'rgba(255,255,255,0.35)',
+                  transition: 'transform 0.2s ease',
+                  transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}
+              />
+            </Box>
+
+            <AnimatePresence initial={false}>
+              {expanded && (
+                <motion.div
+                  key="luminary-panel"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeOut' }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <Box
+                    sx={{
+                      px: 1.5,
+                      py: 1.25,
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 1,
+                      borderTop: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    {luminaries.map((l) => (
+                      <LuminaryIcon key={l.slug} luminary={l} size={52} showName />
+                    ))}
+                  </Box>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
       </Box>
     </motion.div>
   )
 }
 
-function SetsView({ filteredSets }: { filteredSets: GearSet[] }) {
+function SetsView({
+  filteredSets,
+  lumsByPiece,
+}: {
+  filteredSets: GearSet[]
+  lumsByPiece: Map<string, Luminary[]>
+}) {
   return (
     <AnimatePresence mode="popLayout">
       {filteredSets.map((gs) => (
@@ -104,7 +186,11 @@ function SetsView({ filteredSets }: { filteredSets: GearSet[] }) {
             >
               {gs.pieces.map((piece) => (
                 <Box key={piece.slug} sx={{ flex: '1 1 260px', maxWidth: 360 }}>
-                  <PieceCard piece={piece} setName={gs.name} />
+                  <PieceCard
+                    piece={piece}
+                    setName={gs.name}
+                    luminaries={lumsByPiece.get(piece.name) ?? []}
+                  />
                 </Box>
               ))}
             </Box>
@@ -115,12 +201,22 @@ function SetsView({ filteredSets }: { filteredSets: GearSet[] }) {
   )
 }
 
-function GridView({ allPieces }: { allPieces: { piece: GearPiece; setName: string }[] }) {
+function GridView({
+  allPieces,
+  lumsByPiece,
+}: {
+  allPieces: { piece: GearPiece; setName: string }[]
+  lumsByPiece: Map<string, Luminary[]>
+}) {
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
       {allPieces.map(({ piece, setName }) => (
         <Box key={piece.slug} sx={{ flex: '1 1 260px', maxWidth: 360 }}>
-          <PieceCard piece={piece} setName={setName} />
+          <PieceCard
+            piece={piece}
+            setName={setName}
+            luminaries={lumsByPiece.get(piece.name) ?? []}
+          />
         </Box>
       ))}
     </Box>
@@ -129,8 +225,24 @@ function GridView({ allPieces }: { allPieces: { piece: GearPiece; setName: strin
 
 export default function GearPage() {
   const { data: gearSets = [], isLoading } = useGearSets()
+  const { data: luminaries = [] } = useLuminaries()
   const [slot, setSlot] = useState('All')
   const [showSets, setShowSets] = useState(true)
+
+  const lumsByPiece = useMemo(() => {
+    const map = new Map<string, Luminary[]>()
+    for (const l of luminaries) {
+      for (const g of l.recommended_gear ?? []) {
+        const existing = map.get(g.name)
+        if (existing) {
+          existing.push(l)
+        } else {
+          map.set(g.name, [l])
+        }
+      }
+    }
+    return map
+  }, [luminaries])
 
   const filteredSets = useMemo(() => {
     if (slot === 'All') return gearSets
@@ -248,7 +360,11 @@ export default function GearPage() {
         ))
       ) : (
         <LayoutGroup>
-          {showSets ? <SetsView filteredSets={filteredSets} /> : <GridView allPieces={allPieces} />}
+          {showSets ? (
+            <SetsView filteredSets={filteredSets} lumsByPiece={lumsByPiece} />
+          ) : (
+            <GridView allPieces={allPieces} lumsByPiece={lumsByPiece} />
+          )}
         </LayoutGroup>
       )}
     </Box>
