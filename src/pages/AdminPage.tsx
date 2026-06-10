@@ -151,7 +151,7 @@ export default function AdminPage() {
           sx={{ display: 'block', mb: 2, color: 'text.secondary' }}
         />
 
-        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
           <Button
             variant="contained"
             onClick={() => download()}
