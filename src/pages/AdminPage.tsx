@@ -11,6 +11,7 @@ import {
   ListItem,
   ListItemText,
   Paper,
+  Stack,
   Typography,
 } from '@mui/material'
 import { apiClient } from '../api/client'
@@ -30,6 +31,12 @@ interface ImageStatus {
   missing_paths: string[]
 }
 
+interface PurgeResult {
+  status: string
+  total?: number
+  detail?: string
+}
+
 async function fetchStatus(): Promise<ImageStatus> {
   const { data } = await apiClient.get('/admin/images/status')
   return data
@@ -37,6 +44,11 @@ async function fetchStatus(): Promise<ImageStatus> {
 
 async function startDownload(override: boolean): Promise<void> {
   await apiClient.post(`/admin/images/download?override=${override}`)
+}
+
+async function purgeCache(): Promise<PurgeResult> {
+  const { data } = await apiClient.post('/admin/images/purge-cache')
+  return data
 }
 
 export default function AdminPage() {
@@ -55,6 +67,13 @@ export default function AdminPage() {
       setTimeout(() => queryClient.invalidateQueries({ queryKey: ['adminImageStatus'] }), 500)
     },
   })
+
+  const {
+    mutate: purge,
+    isPending: isPurging,
+    data: purgeResult,
+    reset: resetPurge,
+  } = useMutation({ mutationFn: purgeCache })
 
   const progress =
     status && status.total > 0 ? Math.round((status.downloaded / status.total) * 100) : 0
@@ -132,13 +151,39 @@ export default function AdminPage() {
           sx={{ display: 'block', mb: 2, color: 'text.secondary' }}
         />
 
-        <Button
-          variant="contained"
-          onClick={() => download()}
-          disabled={isActive || status?.total === 0}
-        >
-          {isActive ? 'Downloading…' : 'Download Images'}
-        </Button>
+        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+          <Button
+            variant="contained"
+            onClick={() => download()}
+            disabled={isActive || status?.total === 0}
+          >
+            {isActive ? 'Downloading…' : 'Download Images'}
+          </Button>
+
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => {
+              resetPurge()
+              purge()
+            }}
+            disabled={isPurging || status?.total === 0}
+          >
+            {isPurging ? 'Purging…' : 'Purge All Cache'}
+          </Button>
+        </Stack>
+
+        {purgeResult && (
+          <Typography
+            variant="caption"
+            color={purgeResult.status === 'purged' ? 'success.main' : 'text.secondary'}
+            sx={{ mt: 1, display: 'block' }}
+          >
+            {purgeResult.status === 'purged'
+              ? `Cache purged for ${purgeResult.total} image${purgeResult.total === 1 ? '' : 's'}`
+              : (purgeResult.detail ?? 'Cloudflare vars not configured — purge skipped')}
+          </Typography>
+        )}
 
         <Collapse in={(status?.failures?.length ?? 0) > 0}>
           <Box sx={{ mt: 3 }}>
